@@ -5,42 +5,22 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const rooms = require("./db/rooms.js");
 const io = new Server(server);
+const mongoose = require('mongoose');
+const authRoutes = require('./routes/authRoute');
+const roomsRoutes = require('./routes/roomsRoutes');
 
 const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
 
-app.post('/rooms', (req, res) => {
-   const {roomId, userName} = req.body;
-   if(!roomId || !userName) {
-       return res.json({message: 'Не заполнено одно из полей'});
-   }
+app.use('/api/auth', authRoutes);
 
-   if(!rooms[roomId]) {
-       rooms[roomId] = {
-           id: roomId,
-           users: [],
-           messages: []
-       }
-   }
-   res.json({message: 'ok', rooms})
-});
-
-app.get('/rooms/:id', (req, res) => {
-   const {id: roomId} = req.params;
-   if(rooms[roomId]) {
-        const data = {users: rooms[roomId].users, messages: rooms[roomId].messages};
-        res.json(data);
-   } else {
-       res.json({users: [], messages: []});
-   }
-});
+app.use('/rooms', roomsRoutes);
 
 io.on('connection', (socket) => {
     socket.on('join', ({roomId, userName}) => {
         socket.join(roomId);
         const users = rooms[roomId].users;
-        // const users = Object.values(rooms).filter(room => room.id === roomId)[0].users;
         users.push({id: socket.id, name: userName});
 
         socket.broadcast.to(roomId).emit('setUsers', users);
@@ -66,4 +46,10 @@ io.on('connection', (socket) => {
 
 server.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
+    mongoose.connect('mongodb+srv://zaha250:alex@cluster0.jlc9c.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', (error) => {
+        if(error) {
+            console.log('Error connected mongodb: ' + error);
+        }
+        console.log('Connected mongodb')
+    })
 });
