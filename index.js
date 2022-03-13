@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const app = express();
+require('dotenv').config()
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const rooms = require("./db/rooms.js");
@@ -46,7 +47,7 @@ io.on('connection', (socket) => {
 
 server.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
-    mongoose.connect('mongodb+srv://zaha250:alex@cluster0.jlc9c.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', (error) => {
+    mongoose.connect(process.env.MONGO_DB_URL, (error) => {
         if(error) {
             console.log('Error connected mongodb: ' + error);
         }
