@@ -15,7 +15,6 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
-
 app.use('/rooms', roomsRoutes);
 
 io.on('connection', (socket) => {
